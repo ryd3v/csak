@@ -1,3 +1,12 @@
+#  Copyright (c) 2023.
+#
+#  ============================================================
+#  Title: CSAK Tool
+#  Author: Ryan Collins
+#  Date: 2023
+#  Description: A tool for Cybersecurity tasks, including port scanning.
+#  ============================================================
+
 import socket
 from concurrent.futures import ThreadPoolExecutor
 
