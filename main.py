@@ -87,72 +87,90 @@ def run_netdiscover(ip_range):
 
         # Print the output in real-time
         while True:
-            line = process.readline()
+            try:
+                line = process.readline()
+            except pexpect.exceptions.TIMEOUT:
+                break
+
             if not line:
                 break
-            print(line.decode().strip())
+
+            line = line.decode().strip()
+            print(line)
+
+            # Check if the line contains the string indicating the end of the scan
+            if "Currently scanning: Finished!" in line:
+                break
 
         # Wait for the process to complete
         process.wait()
     except subprocess.CalledProcessError as e:
         print(f"Error executing netdiscover: {e.output}")
 
-
-
-
 def main():
-    print("Welcome to the CSAK Tool!")
-    print("Select a task:")
-    print("1. TCP Port Scanning")
-    print("2. UDP Port Scanning")
-    print("3. Scan a URL with Nikto")
-    print("4. Run netdiscover")
-    choice = int(input())
+    while True:  # Start an infinite loop for task selection
+        print("Welcome to the CSAK Tool!")
+        print("Select a task:")
+        print("1. TCP Port Scanning")
+        print("2. UDP Port Scanning")
+        print("3. Scan a URL with Nikto")
+        print("4. Run netdiscover")
+        print("5. Exit")  # Add an option to exit the program
+        choice = int(input())
 
-    if choice == 1:
-        ip = input("Enter the IP address to scan: ")
-        scan_option = input("Enter 'all' to scan all ports or 'range' to specify start and end ports: ")
+        if choice == 1:
+            ip = input("Enter the IP address to scan: ")
+            scan_option = input("Enter 'all' to scan all ports or 'range' to specify start and end ports: ")
 
-        if scan_option.lower() == 'all':
-            open_ports = scan_tcp_ports(ip, start_port=1, end_port=65535)
-        elif scan_option.lower() == 'range':
-            start_port = int(input("Enter the starting port: "))
-            end_port = int(input("Enter the ending port: "))
-            open_ports = scan_tcp_ports(ip, start_port=start_port, end_port=end_port)
+            if scan_option.lower() == 'all':
+                open_ports = scan_tcp_ports(ip, start_port=1, end_port=65535)
+            elif scan_option.lower() == 'range':
+                start_port = int(input("Enter the starting port: "))
+                end_port = int(input("Enter the ending port: "))
+                open_ports = scan_tcp_ports(ip, start_port=start_port, end_port=end_port)
+            elif choice == 3:
+                url = input("Enter the URL you want to scan with Nikto: ")
+                scan_with_nikto(url)
+            else:
+                print("Invalid option. Please choose 'all' or 'range'.")
+                return
+
+            print("Open TCP ports on {}: {}".format(ip, open_ports))
+            pass
+
+        elif choice == 2:
+            ip = input("Enter the IP address to scan: ")
+            scan_option = input("Enter 'all' to scan all ports or 'range' to specify start and end ports: ")
+
+            if scan_option.lower() == 'all':
+                open_ports = scan_udp_ports(ip, start_port=1, end_port=65535)
+            elif scan_option.lower() == 'range':
+                start_port = int(input("Enter the starting port: "))
+                end_port = int(input("Enter the ending port: "))
+                open_ports = scan_udp_ports(ip, start_port=start_port, end_port=end_port)
+            else:
+                print("Invalid option. Please choose 'all' or 'range'.")
+                return
+
+            print("Open UDP ports on {}: {}".format(ip, open_ports))
+            pass
+
         elif choice == 3:
             url = input("Enter the URL you want to scan with Nikto: ")
             scan_with_nikto(url)
+            pass
+
+        elif choice == 4:
+            ip_range = input("Enter the IP address range (e.g., 192.168.2.1/24). Press Ctrl+C to cancel the scan: ")
+            run_netdiscover(ip_range)
+            pass
+
+        elif choice == 5:
+            print("Exiting CSAK Tool. Goodbye!")
+            break  # Exit the loop and end the program
+
         else:
-            print("Invalid option. Please choose 'all' or 'range'.")
-            return
-
-        print("Open TCP ports on {}: {}".format(ip, open_ports))
-
-    elif choice == 2:
-        ip = input("Enter the IP address to scan: ")
-        scan_option = input("Enter 'all' to scan all ports or 'range' to specify start and end ports: ")
-
-        if scan_option.lower() == 'all':
-            open_ports = scan_udp_ports(ip, start_port=1, end_port=65535)
-        elif scan_option.lower() == 'range':
-            start_port = int(input("Enter the starting port: "))
-            end_port = int(input("Enter the ending port: "))
-            open_ports = scan_udp_ports(ip, start_port=start_port, end_port=end_port)
-        else:
-            print("Invalid option. Please choose 'all' or 'range'.")
-            return
-
-        print("Open UDP ports on {}: {}".format(ip, open_ports))
-
-    elif choice == 3:
-        url = input("Enter the URL you want to scan with Nikto: ")
-        scan_with_nikto(url)
-
-    elif choice == 4:
-        ip_range = input("Enter the IP address range (e.g., 192.168.2.1/24) press ctrl + c to cancel the scan: ")
-        run_netdiscover(ip_range)
-    else:
-        print("Invalid option. Please choose a valid task.")
+            print("Invalid option. Please choose a valid task.")
 
 
 if __name__ == "__main__":
