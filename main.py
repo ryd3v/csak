@@ -7,6 +7,7 @@
 #  Description: A tool for Cybersecurity tasks, including port scanning.
 #  ============================================================
 import socket
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
 from tqdm import tqdm
@@ -60,11 +61,28 @@ def scan_udp_port(ip, port):
         return False
 
 
+def scan_with_nikto(url):
+    try:
+        # Run the Nikto command and capture the output in real-time
+        command = f"nikto -url {url}"
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+        # Print the output in real-time
+        for line in process.stdout:
+            print(line, end='')
+
+        # Wait for the process to complete
+        process.wait()
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing Nikto: {e.output}")
+
+
 def main():
     print("Welcome to the CSAK Tool!")
     print("Select a task:")
     print("1. TCP Port Scanning")
     print("2. UDP Port Scanning")
+    print("3. Scan a URL with Nikto")
     choice = int(input())
 
     if choice == 1:
@@ -77,6 +95,9 @@ def main():
             start_port = int(input("Enter the starting port: "))
             end_port = int(input("Enter the ending port: "))
             open_ports = scan_tcp_ports(ip, start_port=start_port, end_port=end_port)
+        elif choice == 3:
+            url = input("Enter the URL you want to scan with Nikto: ")
+            scan_with_nikto(url)
         else:
             print("Invalid option. Please choose 'all' or 'range'.")
             return
@@ -98,6 +119,10 @@ def main():
             return
 
         print("Open UDP ports on {}: {}".format(ip, open_ports))
+
+    elif choice == 3:
+        url = input("Enter the URL you want to scan with Nikto: ")
+        scan_with_nikto(url)
 
 
 if __name__ == "__main__":
