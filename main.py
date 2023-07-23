@@ -1,11 +1,14 @@
 #  Copyright (c) 2023.
-#
 #  ============================================================
 #  Title: CSAK Tool
 #  Author: Ryan Collins
 #  Date: 2023
 #  Description: A tool for Cybersecurity tasks, including port scanning.
 #  ============================================================
+
+import getpass
+import os
+import signal
 import socket
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
@@ -61,6 +64,7 @@ def scan_udp_port(ip, port):
         return False
 
 
+# Nikto
 def scan_with_nikto(url):
     try:
         # Run the Nikto command and capture the output in real-time
@@ -77,12 +81,43 @@ def scan_with_nikto(url):
         print(f"Error executing Nikto: {e.output}")
 
 
+# Netdiscover
+def run_netdiscover(ip_range):
+    try:
+        # Get the password from the user
+        password = getpass.getpass("Enter your password (will not be displayed): ")
+
+        # Run the netdiscover command with sudo and capture the output
+        command = f"sudo -S netdiscover -r {ip_range}"
+        process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT, text=True, preexec_fn=os.setsid)
+
+        print("Netdiscover is running. Press Ctrl+C to stop the process.")
+        print("Please wait...")
+
+        # Print the output in real-time
+        for line in process.stdout:
+            print(line, end='')
+
+        # Wait for the process to complete
+        process.wait()
+    except KeyboardInterrupt:
+        print("Netdiscover process stopped.")
+        # Terminate the process gracefully
+        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing netdiscover: {e.stderr}")
+    except Exception as ex:
+        print(f"Error: {ex}")
+
+
 def main():
     print("Welcome to the CSAK Tool!")
     print("Select a task:")
     print("1. TCP Port Scanning")
     print("2. UDP Port Scanning")
     print("3. Scan a URL with Nikto")
+    print("4. Run netdiscover")
     choice = int(input())
 
     if choice == 1:
@@ -123,6 +158,11 @@ def main():
     elif choice == 3:
         url = input("Enter the URL you want to scan with Nikto: ")
         scan_with_nikto(url)
+    elif choice == 4:
+        ip_range = input("Enter the IP address range to scan with netdiscover (e.g., 192.168.2.1/24): ")
+        run_netdiscover(ip_range)
+    else:
+        print("Invalid option. Please choose a valid task.")
 
 
 if __name__ == "__main__":
