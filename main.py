@@ -6,13 +6,10 @@
 #  Description: A tool for Cybersecurity tasks, including port scanning.
 #  ============================================================
 
-import getpass
-import os
-import signal
 import socket
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
-
+import pexpect
 from tqdm import tqdm
 
 
@@ -84,31 +81,23 @@ def scan_with_nikto(url):
 # Netdiscover
 def run_netdiscover(ip_range):
     try:
-        # Get the password from the user
-        password = getpass.getpass("Enter your password (will not be displayed): ")
-
-        # Run the netdiscover command with sudo and capture the output
-        command = f"sudo -S netdiscover -r {ip_range}"
-        process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT, text=True, preexec_fn=os.setsid)
-
-        print("Netdiscover is running. Press Ctrl+C to stop the process.")
-        print("Please wait...")
+        # Run the netdiscover command and capture the output in real-time
+        command = f"sudo netdiscover -r {ip_range}"
+        process = pexpect.spawn(command)
 
         # Print the output in real-time
-        for line in process.stdout:
-            print(line, end='')
+        while True:
+            line = process.readline()
+            if not line:
+                break
+            print(line.decode().strip())
 
         # Wait for the process to complete
         process.wait()
-    except KeyboardInterrupt:
-        print("Netdiscover process stopped.")
-        # Terminate the process gracefully
-        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
     except subprocess.CalledProcessError as e:
-        print(f"Error executing netdiscover: {e.stderr}")
-    except Exception as ex:
-        print(f"Error: {ex}")
+        print(f"Error executing netdiscover: {e.output}")
+
+
 
 
 def main():
@@ -158,8 +147,9 @@ def main():
     elif choice == 3:
         url = input("Enter the URL you want to scan with Nikto: ")
         scan_with_nikto(url)
+
     elif choice == 4:
-        ip_range = input("Enter the IP address range to scan with netdiscover (e.g., 192.168.2.1/24): ")
+        ip_range = input("Enter the IP address range (e.g., 192.168.2.1/24) press ctrl + c to cancel the scan: ")
         run_netdiscover(ip_range)
     else:
         print("Invalid option. Please choose a valid task.")
