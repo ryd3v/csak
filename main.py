@@ -107,6 +107,7 @@ def run_netdiscover(ip_range):
     except subprocess.CalledProcessError as e:
         print(f"Error executing netdiscover: {e.output}")
 
+
 def main():
     while True:  # Start an infinite loop for task selection
         print("Welcome to the CSAK Tool!")
