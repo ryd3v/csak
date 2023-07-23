@@ -6,63 +6,98 @@
 #  Date: 2023
 #  Description: A tool for Cybersecurity tasks, including port scanning.
 #  ============================================================
-
 import socket
 from concurrent.futures import ThreadPoolExecutor
 
 from tqdm import tqdm
 
 
-def scan_ports(ip_address, start_port=1, end_port=65535):
+def scan_tcp_ports(ip, start_port, end_port=None):
+    if end_port is None:
+        end_port = 65535
+
     open_ports = []
-    total_ports = end_port - start_port + 1
-
-    def scan_single_port(port):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.settimeout(1)  # Set a timeout for the connection attempt
-                result = s.connect_ex((ip_address, port))
-                if result == 0:  # Connection successful
-                    open_ports.append(port)
-        except socket.error:
-            pass
-
     with ThreadPoolExecutor() as executor:
-        list(tqdm(executor.map(scan_single_port, range(start_port, end_port + 1)), total=total_ports,
-                  desc="Scanning ports", unit="port"))
-
+        futures = {executor.submit(scan_tcp_port, ip, port): port for port in range(start_port, end_port + 1)}
+        for future in tqdm(futures, total=len(futures), desc="Scanning TCP ports"):
+            port = futures[future]
+            if future.result():
+                open_ports.append(port)
     return open_ports
+
+
+def scan_udp_ports(ip, start_port, end_port=None):
+    if end_port is None:
+        end_port = 65535
+
+    open_ports = []
+    with ThreadPoolExecutor() as executor:
+        futures = {executor.submit(scan_udp_port, ip, port): port for port in range(start_port, end_port + 1)}
+        for future in tqdm(futures, total=len(futures), desc="Scanning UDP ports"):
+            port = futures[future]
+            if future.result():
+                open_ports.append(port)
+    return open_ports
+
+
+def scan_tcp_port(ip, port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(1)
+    result = sock.connect_ex((ip, port))
+    sock.close()
+    return result == 0
+
+
+def scan_udp_port(ip, port):
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.settimeout(1)  # Set a timeout for the UDP socket
+            sock.sendto(b'X', (ip, port))
+            data, addr = sock.recvfrom(1024)
+            print(f"UDP port {port} open on {ip}")
+            return True
+    except (socket.timeout, OSError):
+        return False
 
 
 def main():
     print("Welcome to the CSAK Tool!")
     print("Select a task:")
-    print("1. Port Scanning")
-    # print("2. Other Task (Decide on another task here)")
+    print("1. TCP Port Scanning")
+    print("2. UDP Port Scanning")
+    choice = int(input())
 
-    task_choice = input("Enter the number of the task you want to perform: ")
+    if choice == 1:
+        ip = input("Enter the IP address to scan: ")
+        scan_option = input("Enter 'all' to scan all ports or 'range' to specify start and end ports: ")
 
-    if task_choice == "1":
-        ip_address = input('Enter the IP address to scan: ')
-
-        port_option = input('Enter "all" to scan all ports, or press Enter to specify a range: ')
-
-        if port_option.lower() == 'all':
-            open_ports = scan_ports(ip_address)
+        if scan_option.lower() == 'all':
+            open_ports = scan_tcp_ports(ip, start_port=1, end_port=65535)
+        elif scan_option.lower() == 'range':
+            start_port = int(input("Enter the starting port: "))
+            end_port = int(input("Enter the ending port: "))
+            open_ports = scan_tcp_ports(ip, start_port=start_port, end_port=end_port)
         else:
-            start_port = int(input('Enter starting port: '))
-            end_port = int(input('Enter ending port: '))
-            open_ports = scan_ports(ip_address, start_port, end_port)
+            print("Invalid option. Please choose 'all' or 'range'.")
+            return
 
-        if open_ports:
-            print(f"Open ports on {ip_address}: {', '.join(map(str, open_ports))}")
+        print("Open TCP ports on {}: {}".format(ip, open_ports))
+
+    elif choice == 2:
+        ip = input("Enter the IP address to scan: ")
+        scan_option = input("Enter 'all' to scan all ports or 'range' to specify start and end ports: ")
+
+        if scan_option.lower() == 'all':
+            open_ports = scan_udp_ports(ip, start_port=1, end_port=65535)
+        elif scan_option.lower() == 'range':
+            start_port = int(input("Enter the starting port: "))
+            end_port = int(input("Enter the ending port: "))
+            open_ports = scan_udp_ports(ip, start_port=start_port, end_port=end_port)
         else:
-            print(f"No open ports found on {ip_address}")
-    # elif task_choice == "2":
-    # Add code for the other task here
-    # print("You selected the other task. Decide what you want to do next?.")
-    else:
-        print("Invalid choice. Please select a valid task.")
+            print("Invalid option. Please choose 'all' or 'range'.")
+            return
+
+        print("Open UDP ports on {}: {}".format(ip, open_ports))
 
 
 if __name__ == "__main__":
