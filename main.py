@@ -106,7 +106,7 @@ def run_netdiscover(ip_range):
 def run_dirb(url, wordlist):
     try:
         # Run the dirb command and capture the output
-        command = f"dirb {url} {wordlist}"
+        command = f"dirb {url} {wordlist} -o dirb.txt -S"
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         for line in process.stdout:
             print(line, end='')

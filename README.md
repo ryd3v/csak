@@ -7,14 +7,15 @@
 ## Description
 
 CSAK Tool is a Python program that provides various cybersecurity-related tasks. Currently, it includes a port
-scanning feature that allows users to scan open ports on a given IP address, Scan a URL with Nikto, and run Netdiscover to find network attached devices.
+scanning feature that allows users to scan open ports on a given IP address, Scan a URL with Nikto, web directory
+scanning with dirb, and Netdiscover to find network attached devices.
 
 ## Features
 
 - TCP/UDP Scan for open ports on a specified IP address or IP address range.
 - Scan a URL with Nikto
 - Run Netdiscover (requires root!)
-- More to come ..
+- Web directory scanning with dirb
 
 ## Prerequisites
 
