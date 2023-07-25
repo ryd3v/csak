@@ -1,9 +1,14 @@
 #  Copyright (c) 2023.
 #  ============================================================
 #  Title: CSAK Tool
+#  Subtitle: Cybersecurity Swiss Army Tool
 #  Author: Ryan Collins
 #  Date: 2023
-#  Description: A tool for Cybersecurity tasks, including port scanning.
+#  Description: A tool for Cybersecurity tasks
+#  TCP Port Scanning
+#  UDP Port Scanning
+#  Scan a URL with Nikto
+#  Netdiscover (must be root!)
 #  ============================================================
 
 import socket
@@ -64,15 +69,11 @@ def scan_udp_port(ip, port):
 # Nikto
 def scan_with_nikto(url):
     try:
-        # Run the Nikto command and capture the output in real-time
+        # Run the Nikto command and capture the output
         command = f"nikto -host {url}"
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-
-        # Print the output in real-time
         for line in process.stdout:
             print(line, end='')
-
-        # Wait for the process to complete
         process.wait()
     except subprocess.CalledProcessError as e:
         print(f"Error executing Nikto: {e.output}")
@@ -81,35 +82,55 @@ def scan_with_nikto(url):
 # Netdiscover
 def run_netdiscover(ip_range):
     try:
-        # Run the netdiscover command and capture the output in real-time
+        # Run the netdiscover command and capture the output
         command = f"sudo netdiscover -r {ip_range}"
         process = pexpect.spawn(command)
-
-        # Print the output in real-time
         while True:
             try:
                 line = process.readline()
             except pexpect.exceptions.TIMEOUT:
                 break
-
             if not line:
                 break
-
             line = line.decode().strip()
             print(line)
-
-            # Check if the line contains the string indicating the end of the scan
             if "Currently scanning: Finished!" in line:
                 break
-
-        # Wait for the process to complete
         process.wait()
     except subprocess.CalledProcessError as e:
         print(f"Error executing netdiscover: {e.output}")
 
 
 def main():
-    while True:  # Start an infinite loop for task selection
+    while True:
+        print("""  ___       _             
+ / (_)     | |            
+|          | |   _   ,_   
+|     |   ||/ \_|/  /  |  
+ \___/ \_/|/\_/ |__/   |_/
+         /|               
+         \|               
+                        
+  ()         o          
+  /\             ,   ,  
+ /  \|  |  |_|  / \_/ \_
+/(__/ \/ \/  |_/ \/  \/ 
+                        
+                        
+  ___,                         
+ /   |                         
+|    |   ,_    _  _  _         
+|    |  /  |  / |/ |/ |  |   | 
+ \__/\_/   |_/  |  |  |_/ \_/|/
+                            /| 
+                            \| 
+ ,                 _      
+/|   /         o  | |     
+ |__/   _  _      | |  _  
+ | \   / |/ |  |  |/  |/  
+ |  \_/  |  |_/|_/|__/|__/
+                  |\      
+                  |/      """)
         print("Welcome to the CSAK Tool!")
         print("Select a task:")
         print("1. TCP Port Scanning")
@@ -167,7 +188,7 @@ def main():
             pass
 
         elif choice == 5:
-            print("Exiting CSAK Tool. Goodbye!")
+            print("Exiting Cyber Swiss Army Knife Tool. Goodbye!")
             break  # Exit the loop and end the program
 
         else:
