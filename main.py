@@ -100,6 +100,18 @@ def run_netdiscover(ip_range):
     except subprocess.CalledProcessError as e:
         print(f"Error executing netdiscover: {e.output}")
 
+# Web Directory Scanning (using dirb)
+def scan_web_directory(url):
+    try:
+        # Run the dirb command and capture the output
+        command = f"dirb {url}"
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        for line in process.stdout:
+            print(line, end='')
+        process.wait()
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing dirb: {e.output}")
+
 
 def main():
     while True:
@@ -137,7 +149,8 @@ def main():
         print("2. UDP Port Scanning")
         print("3. Scan a URL with Nikto")
         print("4. Run netdiscover (must be root!)")
-        print("5. Exit")  # Add an option to exit the program
+        print("5. Web Directory Scanning")
+        print("6. Exit")  # Add an option to exit the program
         choice = int(input())
 
         if choice == 1:
@@ -188,6 +201,11 @@ def main():
             pass
 
         elif choice == 5:
+            url = input("Enter the URL of the web server to scan: ")
+            scan_web_directory(url)
+            pass
+
+        elif choice == 6:
             print("Exiting Cyber Swiss Army Knife Tool. Goodbye!")
             break  # Exit the loop and end the program
 
