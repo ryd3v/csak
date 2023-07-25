@@ -11,13 +11,21 @@ scanning feature that allows users to scan open ports on a given IP address.
 
 ## Features
 
-- Port Scanning: Scan for open ports on a specified IP address or IP address range.
+- TCP/UDP Scan for open ports on a specified IP address or IP address range.
+- Scan a URL with Nikto
+- Run Netdiscover (requires root!)
+- More to come ..
 
 ## Prerequisites
 
 - Python 3.x
 - Libraries:
     - tqdm (for progress bar): You can install it using `pip install tqdm`
+    - colorama
+    - pexpect
+    - ptyprocess
+
+or use pip install -r requirements.txt
 
 ## How to Use
 
