@@ -65,7 +65,7 @@ def scan_udp_port(ip, port):
 def scan_with_nikto(url):
     try:
         # Run the Nikto command and capture the output in real-time
-        command = f"nikto -url {url}"
+        command = f"nikto -host {url}"
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
         # Print the output in real-time
@@ -115,7 +115,7 @@ def main():
         print("1. TCP Port Scanning")
         print("2. UDP Port Scanning")
         print("3. Scan a URL with Nikto")
-        print("4. Run netdiscover")
+        print("4. Run netdiscover (must be root!)")
         print("5. Exit")  # Add an option to exit the program
         choice = int(input())
 
