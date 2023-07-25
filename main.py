@@ -14,6 +14,7 @@
 import socket
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
+
 import pexpect
 from tqdm import tqdm
 
@@ -100,17 +101,18 @@ def run_netdiscover(ip_range):
     except subprocess.CalledProcessError as e:
         print(f"Error executing netdiscover: {e.output}")
 
+
 # Web Directory Scanning (using dirb)
-def scan_web_directory(url):
+def run_dirb(url, wordlist):
     try:
         # Run the dirb command and capture the output
-        command = f"dirb {url}"
+        command = f"dirb {url} {wordlist}"
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         for line in process.stdout:
             print(line, end='')
         process.wait()
     except subprocess.CalledProcessError as e:
-        print(f"Error executing dirb: {e.output}")
+        print(f"Error executing Dirb: {e.output}")
 
 
 def main():
@@ -201,8 +203,9 @@ def main():
             pass
 
         elif choice == 5:
-            url = input("Enter the URL of the web server to scan: ")
-            scan_web_directory(url)
+            url = input("Enter the URL you want to scan with Dirb: ")
+            wordlist = input("Enter the path to the wordlist file: ")
+            run_dirb(url, wordlist)
             pass
 
         elif choice == 6:
