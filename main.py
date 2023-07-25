@@ -78,21 +78,14 @@ def scan_udp_port(ip, port):
 
 
 # Nikto
-def scan_with_nikto(url, output_file=None):
+def scan_with_nikto(url):
     try:
         # Run the Nikto command and capture the output
-        command = f"nikto -host {url}"
+        command = f"nikto -host {url} -output='web.txt'"
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         for line in process.stdout:
             print(line, end='')
         process.wait()
-        if output_file:
-            with open(output_file, 'w') as f:
-                for line in process.stdout:
-                    f.write(line)
-        else:
-            for line in process.stdout:
-                print(line, end='')
     except subprocess.CalledProcessError as e:
         print(f"Error executing Nikto: {e.output}")
 
@@ -148,19 +141,15 @@ def run_netdiscover(ip_range, output_file=None):
 # Web Directory Scanning (using dirb)
 def run_dirb(url, wordlist, output_file=None):
     try:
-        # Run the dirb command and capture the output
-        command = f"dirb {url} {wordlist} -o dirb.txt -S"
+        if output_file:
+            command = f"dirb {url} {wordlist} -o {output_file} -S"
+        else:
+            command = f"dirb {url} {wordlist} -o dirb.txt -S"
+
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         for line in process.stdout:
             print(line, end='')
         process.wait()
-        if output_file:
-            with open(output_file, 'w') as f:
-                for line in process.stdout:
-                    f.write(line)
-        else:
-            for line in process.stdout:
-                print(line, end='')
     except subprocess.CalledProcessError as e:
         print(f"Error executing Dirb: {e.output}")
 
@@ -201,7 +190,7 @@ def main():
         print("2. UDP Port Scanning")
         print("3. Scan a URL with Nikto")
         print("4. Run netdiscover (must be root!)")
-        print("5. Web Directory Scanning")
+        print("5. Web Directory Scanning (dirb)")
         print("6. Exit")
         choice = int(input())
 
@@ -241,8 +230,7 @@ def main():
 
         elif choice == 3:
             url = input("Enter the URL you want to scan with Nikto: ")
-            output_file = input("Enter the output file path (or leave it blank to display results on the console): ")
-            scan_with_nikto(url, output_file=output_file)
+            scan_with_nikto(url)
 
         elif choice == 4:
             ip_range = input("Enter the IP address range (e.g., 192.168.2.1/24). "
@@ -253,7 +241,7 @@ def main():
         elif choice == 5:
             url = input("Enter the URL you want to scan with Dirb: ")
             wordlist = input("Enter the path to the wordlist file: ")
-            output_file = input("Enter the output file path (or leave it blank to display results on the console): ")
+            output_file = "dirb_results.txt"
             run_dirb(url, wordlist, output_file=output_file)
 
         elif choice == 6:
