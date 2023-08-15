@@ -154,36 +154,23 @@ def run_dirb(url, wordlist, output_file=None):
         print(f"Error executing Dirb: {e.output}")
 
 
+def scan_target(ip, start_port=1, end_port=65535, output_file="out.txt"):
+    # TCP Scan
+    open_tcp_ports = scan_tcp_ports(ip, start_port=start_port, end_port=end_port)
+    # UDP Scan
+    open_udp_ports = scan_udp_ports(ip, start_port=start_port, end_port=end_port)
+
+    # Writing results to the output file
+    with open(output_file, 'w') as f:
+        f.write("Open TCP ports on {}: {}\n".format(ip, open_tcp_ports))
+        f.write("Open UDP ports on {}: {}\n".format(ip, open_udp_ports))
+
+    print("Open TCP ports on {}: {}".format(ip, open_tcp_ports))
+    print("Open UDP ports on {}: {}".format(ip, open_udp_ports))
+
+
 def main():
     while True:
-        print("""  ___       _             
- / (_)     | |            
-|          | |   _   ,_   
-|     |   ||/ \_|/  /  |  
- \___/ \_/|/\_/ |__/   |_/
-         /|               
-         \|               
-                        
-  ()         o          
-  /\             ,   ,  
- /  \|  |  |_|  / \_/ \_
-/(__/ \/ \/  |_/ \/  \/ 
-                        
-                        
-  ___,                         
- /   |                         
-|    |   ,_    _  _  _         
-|    |  /  |  / |/ |/ |  |   | 
- \__/\_/   |_/  |  |  |_/ \_/|/
-                            /| 
-                            \| 
- ,                 _      
-/|   /         o  | |     
- |__/   _  _      | |  _  
- | \   / |/ |  |  |/  |/  
- |  \_/  |  |_/|_/|__/|__/
-                  |\      
-                  |/      """)
         print("Welcome to the CSAK Tool!")
         print("Select a task:")
         print("1. TCP Port Scanning")
@@ -191,7 +178,8 @@ def main():
         print("3. Scan a URL with Nikto")
         print("4. Run netdiscover (must be root!)")
         print("5. Web Directory Scanning (dirb)")
-        print("6. Exit")
+        print("6. Full TCP and UDP Port Scanning")
+        print("7. Exit")
         choice = int(input())
 
         if choice == 1:
@@ -245,9 +233,12 @@ def main():
             run_dirb(url, wordlist, output_file=output_file)
 
         elif choice == 6:
-            print("Exiting Cyber Swiss Army Knife Tool. Goodbye!")
-            break  # Exit the loop and end the program
+            ip = input("Enter the IP address to scan: ")
+            scan_target(ip)
 
+        elif choice == 7:
+            print("Exiting Cyber Swiss Army Knife Tool. Goodbye!")
+            break
         else:
             print("Invalid option. Please choose a valid task.")
 
