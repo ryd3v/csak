@@ -16,6 +16,7 @@ scanning with dirb, and Netdiscover to find network attached devices.
 - Scan a URL with Nikto
 - Run Netdiscover (requires root!)
 - Web directory scanning with dirb
+- nmap scanning
 
 ## Prerequisites
 
