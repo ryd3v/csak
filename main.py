@@ -17,6 +17,24 @@ from concurrent.futures import ThreadPoolExecutor
 
 import pexpect
 from tqdm import tqdm
+import os
+import sys
+
+
+def check_tool_installed(tool_name):
+    try:
+        # Use 'which' for UNIX-based systems and 'where' for Windows.
+        command = 'which' if os.name != 'nt' else 'where'
+        subprocess.check_output([command, tool_name], stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError:
+        print(f"Error: {tool_name} is not installed. Please install it and run the tool again.")
+        sys.exit(1)
+
+
+def preflight_checks():
+    tools = ["nikto", "netdiscover", "dirb", "nmap"]
+    for tool in tools:
+        check_tool_installed(tool)
 
 
 def scan_tcp_ports(ip, start_port, end_port=None, output_file=None):
@@ -169,6 +187,17 @@ def scan_target(ip, start_port=1, end_port=65535, output_file="out.txt"):
     print("Open UDP ports on {}: {}".format(ip, open_udp_ports))
 
 
+def run_nmap_scan(ip):
+    try:
+        command = f"nmap -Pn -sS -sV -A {ip} -oN scan.txt"
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        for line in process.stdout:
+            print(line, end='')
+        process.wait()
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing nmap: {e.output}")
+
+
 def main():
     while True:
         print("Welcome to the CSAK Tool!")
@@ -179,7 +208,8 @@ def main():
         print("4. Run netdiscover (must be root!)")
         print("5. Web Directory Scanning (dirb)")
         print("6. Full TCP and UDP Port Scanning")
-        print("7. Exit")
+        print("7. Run nmap scan")
+        print("8. Exit")
         choice = int(input())
 
         if choice == 1:
@@ -237,6 +267,11 @@ def main():
             scan_target(ip)
 
         elif choice == 7:
+            ip = input("Enter the IP address to scan with nmap: ")
+            run_nmap_scan(ip)
+            print("Nmap scan results saved to scan.txt.")
+
+        elif choice == 8:
             print("Exiting Cyber Swiss Army Knife Tool. Goodbye!")
             break
         else:
@@ -244,4 +279,5 @@ def main():
 
 
 if __name__ == "__main__":
+    preflight_checks()
     main()
